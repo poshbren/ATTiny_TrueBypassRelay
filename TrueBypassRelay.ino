@@ -1,10 +1,11 @@
 #include <EEPROM.h>
 
 // PINOUT
-constexpr uint8_t BUTTON_PIN   = 2;
-constexpr uint8_t RELAY_SET    = 0;
-constexpr uint8_t RELAY_RESET  = 1;
-constexpr uint8_t LED_PIN      = 3;
+constexpr uint8_t SWITCH_PIN    = 4;  // Momentary Normally Open Push Button 
+constexpr uint8_t RELAY_SET     = 2;
+constexpr uint8_t RELAY_RESET   = 3;
+constexpr uint8_t LED_BUILT_IN  = 1;   // board supplied LED, no external resistor needed
+constexpr uint8_t LED_EXTERNAL  = 0;   // external board LED, must have a resistor connected to LED
 
 // TIMING
 constexpr uint16_t DEBOUNCE_MS     = 30;
@@ -17,7 +18,7 @@ constexpr uint8_t EEPROM_BASE_ADDR = 0;
 constexpr uint8_t EEPROM_SLOTS     = 64;
 uint8_t eepromIndex = 0;
 
-
+// RELAY PULSE ENGINE
 enum class RelayPulseState : uint8_t {
   IDLE,
   PULSING
@@ -42,6 +43,24 @@ unsigned long pressStartTime = 0;
 unsigned long ledBlinkTime = 0;
 
 
+
+// LED functions (handles active-HIGH and active-LOW)
+
+void setStatusLED(bool on) {
+  digitalWrite(LED_BUILT_IN, on ? HIGH : LOW);
+  digitalWrite(LED_EXTERNAL, on ? HIGH : LOW);
+}
+
+void updateBlinkLED() {
+  if (millis() - ledBlinkTime >= LED_BLINK_MS) {
+    ledBlinkTime = millis();
+    ledBlinkState = !ledBlinkState;
+    setStatusLED(ledBlinkState);
+  }
+}
+
+// Non-blocking relay pulse start
+
 void startRelayPulse(bool state) {
   if (relayPulseState != RelayPulseState::IDLE) return;
 
@@ -52,6 +71,8 @@ void startRelayPulse(bool state) {
   relayPulseState = RelayPulseState::PULSING;
 }
 
+// Relay pulse update (call every loop)
+
 void updateRelayPulse() {
   if (relayPulseState == RelayPulseState::PULSING) {
     if (millis() - relayPulseStart >= RELAY_PULSE_MS) {
@@ -60,6 +81,9 @@ void updateRelayPulse() {
     }
   }
 }
+
+
+// EEPROM wear-level read
 
 bool loadRelayState() {
   bool lastValid = false;
@@ -73,6 +97,7 @@ bool loadRelayState() {
       found = true;
     }
   }
+
   if (!found) {
     eepromIndex = 0;
     return false;
@@ -80,31 +105,39 @@ bool loadRelayState() {
   return lastValid;
 }
 
+
+// EEPROM wear-level write
+
 void saveRelayState(bool state) {
   EEPROM.update(EEPROM_BASE_ADDR + eepromIndex, state ? 1 : 0);
   eepromIndex = (eepromIndex + 1) % EEPROM_SLOTS;
 }
 
 void setup() {
-  pinMode(BUTTON_PIN, INPUT_PULLUP);
+  pinMode(SWITCH_PIN, INPUT_PULLUP);
+
   pinMode(RELAY_SET, OUTPUT);
   pinMode(RELAY_RESET, OUTPUT);
-  pinMode(LED_PIN, OUTPUT);
+
+  pinMode(LED_BUILT_IN, OUTPUT);
+  pinMode(LED_EXTERNAL, OUTPUT);
 
   digitalWrite(RELAY_SET, LOW);
   digitalWrite(RELAY_RESET, LOW);
 
+  setStatusLED(false);
+
   relayState = loadRelayState();
   startRelayPulse(relayState);
-  digitalWrite(LED_PIN, relayState ? HIGH : LOW);
+  setStatusLED(relayState);
 }
 
 void loop() {
+  updateRelayPulse();
 
-  updateRelayPulse();   
+  bool newButtonReading = digitalRead(SWITCH_PIN);
 
-  bool newButtonReading = digitalRead(BUTTON_PIN);
-
+  // Debouncing
   if (newButtonReading != lastButtonReading) {
     debounceTime = millis();
   }
@@ -122,18 +155,19 @@ void loop() {
       else {
         if (longPressActive) {
           startRelayPulse(relayState);
-          digitalWrite(LED_PIN, relayState ? HIGH : LOW);
+          setStatusLED(relayState);
           longPressActive = false;
         } else {
           relayState = !relayState;
           startRelayPulse(relayState);
           saveRelayState(relayState);
-          digitalWrite(LED_PIN, relayState ? HIGH : LOW);
+          setStatusLED(relayState);
         }
       }
     }
   }
 
+  // Long press detection
   if (buttonState == LOW && !longPressActive &&
       (millis() - pressStartTime) > LONG_PRESS_MS) {
 
@@ -142,19 +176,18 @@ void loop() {
     startRelayPulse(tempRelayState);
 
     if (!tempRelayState) {
-      digitalWrite(LED_PIN, LOW);
+      setStatusLED(false);
+    } else {
+      ledBlinkTime = millis();
+      ledBlinkState = true;
+      setStatusLED(true);
     }
   }
 
-  // LED During Long Press
+  // LED behavior during long press
   if (longPressActive && tempRelayState) {
-    if (millis() - ledBlinkTime > LED_BLINK_MS) {
-      ledBlinkTime = millis();
-      ledBlinkState = !ledBlinkState;
-      digitalWrite(LED_PIN, ledBlinkState);
-    }
+    updateBlinkLED();
   }
 
   lastButtonReading = newButtonReading;
 }
-
