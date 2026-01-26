@@ -44,9 +44,10 @@ unsigned long ledBlinkTime = 0;
 
 
 
-// LED functions (handles active-HIGH and active-LOW)
+// LED functions 
 
 void setStatusLED(bool on) {
+// Comment out any LED that isn't being used
   digitalWrite(LED_BUILT_IN, on ? HIGH : LOW);
   digitalWrite(LED_EXTERNAL, on ? HIGH : LOW);
 }
@@ -82,7 +83,6 @@ void updateRelayPulse() {
   }
 }
 
-
 // EEPROM wear-level read
 
 bool loadRelayState() {
@@ -104,7 +104,6 @@ bool loadRelayState() {
   }
   return lastValid;
 }
-
 
 // EEPROM wear-level write
 
