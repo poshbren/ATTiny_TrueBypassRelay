@@ -32,8 +32,8 @@ unsigned long relayPulseStart = 0;
 bool relayState = false;
 bool tempRelayState = false;
 
-bool buttonState = HIGH;
-bool lastButtonReading = HIGH;
+bool switchState = HIGH;
+bool lastSwitchReading = HIGH;
 
 bool longPressActive = false;
 bool ledBlinkState = false;
@@ -41,7 +41,6 @@ bool ledBlinkState = false;
 unsigned long debounceTime = 0;
 unsigned long pressStartTime = 0;
 unsigned long ledBlinkTime = 0;
-
 
 
 // LED functions 
@@ -60,7 +59,7 @@ void updateBlinkLED() {
   }
 }
 
-// Non-blocking relay pulse start
+// Non-blocking relay pulse
 
 void startRelayPulse(bool state) {
   if (relayPulseState != RelayPulseState::IDLE) return;
@@ -72,8 +71,6 @@ void startRelayPulse(bool state) {
   relayPulseState = RelayPulseState::PULSING;
 }
 
-// Relay pulse update (call every loop)
-
 void updateRelayPulse() {
   if (relayPulseState == RelayPulseState::PULSING) {
     if (millis() - relayPulseStart >= RELAY_PULSE_MS) {
@@ -83,33 +80,75 @@ void updateRelayPulse() {
   }
 }
 
-// EEPROM wear-level read
+// EEPROM 
 
 bool loadRelayState() {
-  bool lastValid = false;
-  bool found = false;
-
   for (uint8_t i = 0; i < EEPROM_SLOTS; i++) {
     uint8_t v = EEPROM.read(EEPROM_BASE_ADDR + i);
     if (v == 0 || v == 1) {
-      lastValid = v;
-      eepromIndex = (i + 1) % EEPROM_SLOTS;
-      found = true;
+      return v;
     }
   }
-
-  if (!found) {
-    eepromIndex = 0;
-    return false;
-  }
-  return lastValid;
+  return false;
 }
-
-// EEPROM wear-level write
 
 void saveRelayState(bool state) {
   EEPROM.update(EEPROM_BASE_ADDR + eepromIndex, state ? 1 : 0);
   eepromIndex = (eepromIndex + 1) % EEPROM_SLOTS;
+}
+
+// Switch Helpers
+
+void handleSwitchPressed() {
+  pressStartTime = millis();
+  longPressActive = false;
+}
+
+void handleSwitchReleased() {
+  if (longPressActive) {
+    restoreAfterLongPress();
+    longPressActive = false;
+    return;
+  }
+
+  toggleRelayAndStore();
+}
+
+void handleLongPress() {
+  if (switchState != LOW) return;
+
+  if (longPressActive) {
+    updateBlinkLED();
+    return;
+  }
+
+  if (millis() - pressStartTime < LONG_PRESS_MS) return;
+
+  longPressActive = true;
+  tempRelayState = !relayState;
+  startRelayPulse(tempRelayState);
+
+  if (tempRelayState) {
+    ledBlinkTime = millis();
+    ledBlinkState = true;
+    setStatusLED(true);
+  } else {
+    setStatusLED(false);
+  }
+}
+
+// Relay Helpers
+
+void toggleRelayAndStore() {
+  relayState = !relayState;
+  startRelayPulse(relayState);
+  saveRelayState(relayState);
+  setStatusLED(relayState);
+}
+
+void restoreAfterLongPress() {
+  startRelayPulse(relayState);
+  setStatusLED(relayState);
 }
 
 void setup() {
@@ -124,69 +163,37 @@ void setup() {
   digitalWrite(RELAY_SET, LOW);
   digitalWrite(RELAY_RESET, LOW);
 
-  setStatusLED(false);
-
   relayState = loadRelayState();
-  startRelayPulse(relayState);
+  startRelayPulse(relayState); // Power-up Resync
   setStatusLED(relayState);
 }
 
 void loop() {
+
   updateRelayPulse();
+  
+  const bool newSwitchReading = digitalRead(SWITCH_PIN);
 
-  bool newButtonReading = digitalRead(SWITCH_PIN);
-
-  // Debouncing
-  if (newButtonReading != lastButtonReading) {
+  if (newSwitchReading != lastSwitchReading) {
     debounceTime = millis();
+    lastSwitchReading = newSwitchReading;
   }
 
-  if ((millis() - debounceTime) > DEBOUNCE_MS) {
-    if (newButtonReading != buttonState) {
-      buttonState = newButtonReading;
-
-      // Button pressed
-      if (buttonState == LOW) {
-        pressStartTime = millis();
-        longPressActive = false;
-      }
-      // Button released
-      else {
-        if (longPressActive) {
-          startRelayPulse(relayState);
-          setStatusLED(relayState);
-          longPressActive = false;
-        } else {
-          relayState = !relayState;
-          startRelayPulse(relayState);
-          saveRelayState(relayState);
-          setStatusLED(relayState);
-        }
-      }
-    }
+  if ((millis() - debounceTime) <= DEBOUNCE_MS) {
+    return;
   }
 
-  // Long press detection
-  if (buttonState == LOW && !longPressActive &&
-      (millis() - pressStartTime) > LONG_PRESS_MS) {
-
-    longPressActive = true;
-    tempRelayState = !relayState;
-    startRelayPulse(tempRelayState);
-
-    if (!tempRelayState) {
-      setStatusLED(false);
-    } else {
-      ledBlinkTime = millis();
-      ledBlinkState = true;
-      setStatusLED(true);
-    }
+  if (newSwitchReading == switchState) {
+    handleLongPress();  
+    return;
   }
 
-  // LED behavior during long press
-  if (longPressActive && tempRelayState) {
-    updateBlinkLED();
-  }
+  switchState = newSwitchReading;
 
-  lastButtonReading = newButtonReading;
+  if (switchState == LOW) {
+    handleSwitchPressed();
+  } else {
+    handleSwitchReleased();
+  }
 }
+
