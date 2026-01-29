@@ -1,21 +1,21 @@
 #include <EEPROM.h>
 
 // PINOUT
-constexpr uint8_t SWITCH_PIN    = 4;  // Momentary Normally Open Push Button 
-constexpr uint8_t RELAY_SET     = 2;
-constexpr uint8_t RELAY_RESET   = 3;
-constexpr uint8_t LED_BUILT_IN  = 1;   // board supplied LED, no external resistor needed
-constexpr uint8_t LED_EXTERNAL  = 0;   // external board LED, must have a resistor connected to LED
+constexpr uint8_t SWITCH_PIN   = 4;  // Momentary Normally Open Push Button
+constexpr uint8_t RELAY_SET    = 2;
+constexpr uint8_t RELAY_RESET  = 3;
+constexpr uint8_t LED_BUILT_IN = 1;  // board supplied LED, no external resistor needed
+constexpr uint8_t LED_EXTERNAL = 0;  // external board LED, must have a resistor connected to LED
 
 // TIMING
-constexpr uint16_t DEBOUNCE_MS     = 30;
-constexpr uint16_t LONG_PRESS_MS   = 800;
-constexpr uint16_t RELAY_PULSE_MS  = 20;
-constexpr uint16_t LED_BLINK_MS    = 250;
+constexpr uint16_t DEBOUNCE_MS    = 30;
+constexpr uint16_t LONG_PRESS_MS  = 800;
+constexpr uint16_t RELAY_PULSE_MS = 20;
+constexpr uint16_t LED_BLINK_MS   = 250;
 
 // EEPROM
 constexpr uint8_t EEPROM_BASE_ADDR = 0;
-constexpr uint8_t EEPROM_SLOTS     = 64;
+constexpr uint8_t EEPROM_SLOTS = 64;
 uint8_t eepromIndex = 0;
 
 // RELAY PULSE ENGINE
@@ -43,10 +43,10 @@ unsigned long pressStartTime = 0;
 unsigned long ledBlinkTime = 0;
 
 
-// LED functions 
+// LED functions
 
 void setStatusLED(bool on) {
-// Comment out any LED that isn't being used
+  // Comment out any LED that isn't being used
   digitalWrite(LED_BUILT_IN, on ? HIGH : LOW);
   digitalWrite(LED_EXTERNAL, on ? HIGH : LOW);
 }
@@ -80,7 +80,7 @@ void updateRelayPulse() {
   }
 }
 
-// EEPROM 
+// EEPROM
 
 bool loadRelayState() {
   for (uint8_t i = 0; i < EEPROM_SLOTS; i++) {
@@ -171,7 +171,7 @@ void setup() {
 void loop() {
 
   updateRelayPulse();
-  
+
   const bool newSwitchReading = digitalRead(SWITCH_PIN);
 
   if (newSwitchReading != lastSwitchReading) {
@@ -184,7 +184,7 @@ void loop() {
   }
 
   if (newSwitchReading == switchState) {
-    handleLongPress();  
+    handleLongPress();
     return;
   }
 
@@ -196,4 +196,3 @@ void loop() {
     handleSwitchReleased();
   }
 }
-
