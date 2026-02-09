@@ -25,6 +25,7 @@ This repo will give you the files needed to get your own PCBs assembled / progra
 * (Optional but recommended) JST SH Compatible 1mm Pitch 3-pin Plug-Plug Cable for programming. [JST Cable from Adafruit](https://www.adafruit.com/product/6404)
 
 ## Userguide
-// In Progress
+
+See Guide.PDF in main repo.
 
 
