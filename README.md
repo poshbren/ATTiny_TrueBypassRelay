@@ -3,7 +3,7 @@
 A beginner friendly intro to programming / microcontrollers for DIY pedal enthusiasts.
 
 This repo should give you everything you need to add digital relay controls to your projects. This is a fully DIY project. At this time I do not sell pre-programed or pre-fab boards.
-This repo will give you the files needed to get your own PCBs assembled & programmed or to include the framework into your own custom PCBs.
+This repo will give you the files needed to get your own PCBs assembled / programmed and to include the framework into your own custom PCBs.
 
 ## Features
 
