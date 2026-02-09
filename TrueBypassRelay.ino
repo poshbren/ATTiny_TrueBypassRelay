@@ -1,17 +1,17 @@
 #include <EEPROM.h>
 
 // PINOUT
-constexpr uint8_t SWITCH_PIN   = 4;  // Momentary Normally Open Push Button
-constexpr uint8_t RELAY_SET    = 2;
-constexpr uint8_t RELAY_RESET  = 3;
-constexpr uint8_t LED_BUILT_IN = 1;  // board supplied LED, no external resistor needed
-constexpr uint8_t LED_EXTERNAL = 0;  // external board LED, must have a resistor connected to LED
+constexpr uint8_t SWITCH_PIN   = 0;  // Pin 2 - Momentary Normally Open Push Button
+constexpr uint8_t RELAY_SET    = 2;  // Pin 4
+constexpr uint8_t RELAY_RESET  = 4;  // Pin 7
+constexpr uint8_t LED_BUILT_IN = 3;  // Pin 5 - board supplied LED, no external resistor needed
+constexpr uint8_t LED_EXTERNAL = 1;  // Pin 3 - external board LED, must have a resistor connected to LED
 
 // TIMING
 constexpr uint16_t DEBOUNCE_MS    = 30;
-constexpr uint16_t LONG_PRESS_MS  = 800;
+constexpr uint16_t LONG_PRESS_MS  = 400;
 constexpr uint16_t RELAY_PULSE_MS = 20;
-constexpr uint16_t LED_BLINK_MS   = 250;
+constexpr uint16_t LED_BLINK_MS   = 150;
 
 // EEPROM
 constexpr uint8_t EEPROM_BASE_ADDR = 0;
@@ -35,6 +35,7 @@ bool tempRelayState = false;
 bool switchState = HIGH;
 bool lastSwitchReading = HIGH;
 
+bool allowBlink = true; // Set to false to disable blink
 bool longPressActive = false;
 bool ledBlinkState = false;
 
@@ -110,14 +111,13 @@ void handleSwitchReleased() {
     longPressActive = false;
     return;
   }
-
   toggleRelayAndStore();
 }
 
 void handleLongPress() {
   if (switchState != LOW) return;
 
-  if (longPressActive) {
+  if (longPressActive && allowBlink && tempRelayState) { // remove tempRelayState to enable blink on bypass
     updateBlinkLED();
     return;
   }
