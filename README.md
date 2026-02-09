@@ -14,7 +14,7 @@ This repo will give you the files needed to get your own PCBs assembled / progra
 * Programmable Status LED. One built in or control the LED on a parent PCB if using PedalPCB boards.
 * Wiring is directly compatable with PedalPCB.com kits.
 * Rated up to 6.4 million cycles. (Can be extended in program but that will be overkill)
-* Fully open source. Use in your DIY pedals or adopt into your commercial projects.
+* Fully open source. Use in your DIY pedals or adapt into your commercial projects.
 
 ## What you will need
 
