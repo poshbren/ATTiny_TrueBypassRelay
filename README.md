@@ -28,4 +28,16 @@ This repo will give you the files needed to get your own PCBs assembled / progra
 
 See Guide.PDF in main repo.
 
+## PCB Assembly Guide
+
+The included production files are in a JLCPCB friendly format. Other manufacturers can be used but the BOM file may need to be adjusted.
+
+### Production Tips
+
+The included pcb layout does not include all the markers needed for fabrication. Due to the small board size it is impractical to add tooling marks and fiducials directly to the PCB. Instead look for these options when placing your PCB order:
+
+* Delivery Format - If ordering in bulk choose "Panel by JLCPCB" or your preffered manufacturer. This will make assembly much easier for the manufacturer. 
+* Edge Rails/Fiducials - These must be added for assembly. Choose "Added by JLCPCB". Due to the small board size they may ask to panelize the boards for assembly.
+* Confirm Parts Placement - Through JLCPCB's ordering you should have a chance to check the positions / rotations of the components before assembly. In either case select this option to ensure correct placement.
+* All other settings can be kept as default. Change the board color to your preference. 
 

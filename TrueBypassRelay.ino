@@ -15,7 +15,7 @@ constexpr uint16_t LED_BLINK_MS   = 150;
 
 // EEPROM
 constexpr uint8_t EEPROM_BASE_ADDR = 0;
-constexpr uint8_t EEPROM_SLOTS = 64;
+constexpr uint8_t EEPROM_SLOTS = 64; // Change to 128 to use full eeprom of ATtiny412
 uint8_t eepromIndex = 0;
 
 // RELAY PULSE ENGINE
