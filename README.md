@@ -41,3 +41,15 @@ The included pcb layout does not include all the markers needed for fabrication.
 * Confirm Parts Placement - Through JLCPCB's ordering you should have a chance to check the positions / rotations of the components before assembly. In either case select this option to ensure correct placement.
 * All other settings can be kept as default. Change the board color to your preference. 
 
+## Programming
+
+1. Download and install the Arduino IDE [Arduino.cc](https://www.arduino.cc/en/software/)
+2. Download a zip file of this Repo, unzip the folder and re-name to TrueBypassRelay (Arduino needs the parent folder to have the same name as the .ino file)
+3. Navigate to the Arduino folder that was installed with the Arduino IDA. Copy the TrueBypassRelay into the Arduino folder.
+4. Open the truebypassrelay.ino file. This will open up the Arduino IDE. 
+5. If using an Arduino Uno / Nano for programming follow the steps here https://github.com/ElTangas/jtag2updi.git. Note that the board must be programmed with 5V logic. 3.3V logic will not work.
+6. If you are using the Adafruit UPDI Friend or a similar UPDI programmer follow the guide here https://learn.adafruit.com/adafruit-updi-friend/advanced-reprogramming-with-updi 
+7. This board uses the ATtiny412 make sure the board chip is set to "ATtiny412" and the clock speed is set to "20 MHz internal". For everything else follow the guide.
+8. Upload the Arduino sketch using the "Upload Using Programmer" option. Your relay board is now ready to use!
+
+Notes: The True Bypass Relay board can be programmed "in circuit" meaning you can wire it to your guitar pedal and still program the board. Re-program as many times as you like.
