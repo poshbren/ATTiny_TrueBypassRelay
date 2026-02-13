@@ -44,7 +44,7 @@ unsigned long pressStartTime = 0;
 unsigned long ledBlinkTime = 0;
 
 
-// LED functions
+// LED FUNCTIONS
 
 void setStatusLED(bool on) {
   // Comment out any LED that isn't being used
@@ -60,7 +60,7 @@ void updateBlinkLED() {
   }
 }
 
-// Non-blocking relay pulse
+// RELAY FUNCTIONS
 
 void startRelayPulse(bool state) {
   if (relayPulseState != RelayPulseState::IDLE) return;
@@ -98,7 +98,7 @@ void saveRelayState(bool state) {
   eepromIndex = (eepromIndex + 1) % EEPROM_SLOTS;
 }
 
-// Switch Helpers
+// SWITCH HELPERS
 
 void handleSwitchPressed() {
   pressStartTime = millis();
@@ -137,7 +137,7 @@ void handleLongPress() {
   }
 }
 
-// Relay Helpers
+// RELAY HELPERS
 
 void toggleRelayAndStore() {
   relayState = !relayState;
