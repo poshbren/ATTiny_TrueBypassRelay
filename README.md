@@ -30,7 +30,7 @@ See Guide.PDF in main repo.
 
 ## PCB Assembly Guide
 
-The included production files are in a JLCPCB friendly format. Other manufacturers can be used but the BOM file may need to be adjusted.
+The included production files are in a JLCPCB friendly format. Other manufacturers can be used but the BOM file may need to be adjusted. *Note that the value of R1 is 220 ohms. This is the minimum resistor value for the LED. The LED is at nearly full brightness at this value. Swap to a 470 ohm or 1K ohm resistor for reduced brightness.
 
 ### Production Tips
 
